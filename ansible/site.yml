@@ -1,0 +1,26 @@
+- hosts: localhost
+#
+#  vars:
+#    apache_group:
+#      Debian: "root"
+#      RedHat: "apache"
+#    apache_ctl:
+#      Debian: "/usr/sbin/apache2ctl"
+#      RedHat: "/usr/sbin/apachectl"
+#
+  tasks:
+    - name: Update apt
+      become: yes
+      apt: update_cache=yes cache_valid_time=3600
+
+    - name: Install nagios
+      become: yes
+      apt: pkg={{ item }} state=latest
+      with_items:
+      - ssh
+      - git
+      - nagios3
+      - python-passlib
+
+    - name: Set nagios user
+      htpasswd: path=/etc/nagios3/htpasswd.users name=neontribe password="{{ nagios_passwd }}" crypt_scheme=md5_crypt

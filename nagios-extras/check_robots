@@ -1,0 +1,10 @@
+#!/bin/bash
+
+COUNT=`wget -O - -q $1/robots.txt |wc -l`
+if [ "$COUNT" -gt 5 ]; then
+    echo "Robots good: $COUNT lines";
+    exit 1;
+fi
+
+echo "Robots Bad: $COUNT lines";
+exit 0;
