@@ -63,10 +63,6 @@
       copy: src=ssh/id_rsa.pub dest=/var/lib/nagios/.ssh/id_rsa.pub owner=nagios group=nagios mode=0700
       become: yes
 
-    - name: Copy in the ssh dsa private key
-      copy: src=ssh/id_rsa dest=/var/lib/nagios/.ssh/id_rsa owner=nagios group=nagios mode=0700
-      become: yes
-
-    - name: Copy in the ssh dsa public key
-      copy: src=ssh/id_dsa.pub dest=/var/lib/nagios/.ssh/id_dsa.pub owner=nagios group=nagios mode=0700
+    - name: Copy in the ssh known hosts
+      copy: src=ssh/known_hosts dest=/var/lib/nagios/.ssh/known_hosts owner=nagios group=nagios mode=0700
       become: yes

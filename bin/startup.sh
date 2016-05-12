@@ -1,4 +1,7 @@
 #!/bin/bash
 
 service nagios3 start
-apache2ctl -DFOREGROUND
+service apache2 start
+# apache2ctl -DFOREGROUND
+
+/bin/bash
