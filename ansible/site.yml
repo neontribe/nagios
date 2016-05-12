@@ -9,9 +9,9 @@
 #      RedHat: "/usr/sbin/apachectl"
 #
   tasks:
-    - name: Update apt
-      become: yes
-      apt: update_cache=yes cache_valid_time=3600
+      #- name: Update apt
+      #become: yes
+      #apt: update_cache=yes cache_valid_time=3600
 
     - name: Install nagios
       become: yes
@@ -19,8 +19,54 @@
       with_items:
       - ssh
       - git
+      - sudo
       - nagios3
       - python-passlib
 
+    - name: Ensure .ssh folder for nagios user
+      file: path=/var/lib/nagios/.ssh state=directory owner=nagios group=nagios mode=0700 recurse=yes
+      become: yes
+
+    - name: Clean out dist nagios config
+      file: path=/etc/nagios3 state=absent
+      become: yes
+
+    - name: Clean out dist nagios-plugins config
+      file: path=/etc/nagios-plugins state=absent
+      become: yes
+
+    - name: Clean out dist nagios-extras config
+      file: path=/usr/local/share/nagios-extras state=absent
+      become: yes
+
+    - name: Add out nagios config
+      synchronize: src=nagios3 dest=/etc/
+      become: yes
+
+    - name: Add out nagios-plugins config
+      synchronize: src=nagios-plugins dest=/etc/
+      become: yes
+
+    - name: Add out nagios-extras config
+      synchronize: src=nagios-extras dest=/usr/local/share/
+      become: yes
+
     - name: Set nagios user
-      htpasswd: path=/etc/nagios3/htpasswd.users name=neontribe password="{{ nagios_passwd }}" crypt_scheme=md5_crypt
+      htpasswd: path=/etc/nagios3/htpasswd.users name=neontribe password="{{ neontribe_pass }}" crypt_scheme=md5_crypt
+      become: yes
+
+    - name: Copy in the ssh rsa private key
+      copy: src=ssh/id_rsa dest=/var/lib/nagios/.ssh/id_rsa owner=nagios group=nagios mode=0700
+      become: yes
+
+    - name: Copy in the ssh rsa public key
+      copy: src=ssh/id_rsa.pub dest=/var/lib/nagios/.ssh/id_rsa.pub owner=nagios group=nagios mode=0700
+      become: yes
+
+    - name: Copy in the ssh dsa private key
+      copy: src=ssh/id_rsa dest=/var/lib/nagios/.ssh/id_rsa owner=nagios group=nagios mode=0700
+      become: yes
+
+    - name: Copy in the ssh dsa public key
+      copy: src=ssh/id_dsa.pub dest=/var/lib/nagios/.ssh/id_dsa.pub owner=nagios group=nagios mode=0700
+      become: yes
