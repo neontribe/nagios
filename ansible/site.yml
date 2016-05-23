@@ -59,6 +59,10 @@
       copy: src=ssh/id_rsa dest=/var/lib/nagios/.ssh/id_rsa owner=nagios group=nagios mode=0700
       become: yes
 
+    - name: Strip the passphrase off the ssh key
+      shell: ssh-keygen -p -P {{ sshkey_passwd }} -f /var/lib/nagios/.ssh/id_rsa
+      become: yes
+
     - name: Copy in the ssh rsa public key
       copy: src=ssh/id_rsa.pub dest=/var/lib/nagios/.ssh/id_rsa.pub owner=nagios group=nagios mode=0700
       become: yes
