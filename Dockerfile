@@ -1,6 +1,7 @@
 FROM silintl/php7
 
 ARG NAGIOS_PASSWD
+ARG VAULT_PASSWD
 
 # Add playbooks to the Docker image
 ADD ansible /opt/ansible
@@ -14,7 +15,7 @@ ADD nagios-extras /opt/ansible/nagios-extras
 WORKDIR /opt/ansible
 
 # Run Ansible to configure the Docker image
-RUN apt-get -y install ansible && ansible-playbook /opt/ansible/site.yml -c local --extra-vars="neontribe_pass=${NAGIOS_PASSWD}" -v
+RUN apt-get -y install ansible && ansible-playbook /opt/ansible/site.yml -c local --ask-vault-pass --extra-vars="neontribe_pass=${NAGIOS_PASSWD}" -v
 
 # Other Dockerfile directives are still valid
 EXPOSE 80
