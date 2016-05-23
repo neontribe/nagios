@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+
+import requests, json, sys, os.path
+from random import randint
+
+
+def checkSagepay(data, is_live_site):
+    sagepay = data["sagepay"]
+    exitStatus = {}
+    exitStatus['data'] = data
+
+    if is_live_site == 'Live':
+        if sagepay == 'Live':
+            exitStatus['print'] = "OK: Sagepay live on live"
+            exitStatus['status'] = 0
+        else:
+            exitStatus['print'] = "CRITICAL: Sagepay not Live on live"
+            exitStatus['status'] = 2
+    else:
+        if sagepay == 'Test':
+            exitStatus['print'] = "OK: Sagepay test RC"
+            exitStatus['status'] = 0
+        else:
+            exitStatus['print'] = "WARNING: Sagepay not test on RC"
+            exitStatus['status'] = 1
+    return exitStatus
+
+def checkReadOnly(data):
+    readonly = data["readonly"]
+    exitStatus = {}
+    exitStatus['data'] = data
+
+    exists = data["exists"]
+
+    if not exists:
+        exitStatus['print'] = "WARNING: Read only not installed"
+        exitStatus['status'] = 1
+    elif readonly:
+        exitStatus['print'] = "CRITICAL: Site in RO"
+        exitStatus['status'] = 2
+    else:
+        exitStatus['print'] = "OK: Site in RW"
+        exitStatus['status'] = 0
+    return exitStatus
+
+def checkCron(data):
+    exitStatus = {}
+    exitStatus['data'] = data
+
+    minutes = int(data['minutes'])
+
+    if (minutes > 15):
+        exitStatus['print'] = "WARNING: Cron  ran " + str(minutes) + " minutes ago"
+        exitStatus['status'] = 1
+    elif (minutes > 60):
+        exitStatus['print'] = "CRITICAL: Cron ran " + str(minutes) + " minutes ago"
+        exitStatus['status'] = 2
+    else:
+        exitStatus['print'] = "OK: Cron ran " + str(minutes) + " minutes ago"
+        exitStatus['status'] = 0
+
+    return exitStatus
+
+def checkDevel(data):
+    exitStatus = {}
+    exitStatus['data'] = data
+
+    exists = data["exists"]
+
+    if not exists:
+        exitStatus['print'] = "OK: Devel not enabled"
+        exitStatus['status'] = 0
+    else:
+        exitStatus['print'] = "WARNING: Devel is enabled"
+        exitStatus['status'] = 1
+    return exitStatus
+
+
+try:
+    if os.path.isfile(sys.argv[1]):
+        with open(sys.argv[1]) as data_file:
+            data = json.load(data_file)
+    else:
+        url = sys.argv[1] + '?uid=' + str(randint(0,999999))
+        headers = {'Pragma': 'no-cache', 'Cache-Control': 'no-cache', 'Expires': '-1'}
+
+        r = requests.get(url, headers=headers)
+        data = r.json()
+
+    is_live_site = sys.argv[2]
+
+    sagepay = checkSagepay(data["sagepay"], is_live_site)
+    readonly = checkReadOnly(data["readonly"])
+    cron = checkCron(data['cron'])
+    devel = checkDevel(data['devel'])
+
+    state = max(sagepay['status'], readonly['status'], cron['status'], devel['status']);
+    message = sagepay['print'] + ', ' + readonly['print'] + ', ' + cron['print'] + ', ' + devel['print']
+
+    print message
+    sys.exit(state)
+
+except Exception as inst:
+    print "UNKNOWN - Error: ", inst, data
+    sys.exit(3)
