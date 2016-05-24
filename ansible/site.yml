@@ -21,7 +21,10 @@
       - git
       - sudo
       - nagios3
+      - nagios-plugins
+      - nagios-nrpe-server
       - python-passlib
+      - python-requests
 
     - name: Ensure .ssh folder for nagios user
       file: path=/var/lib/nagios/.ssh state=directory owner=nagios group=nagios mode=0700 recurse=yes
@@ -68,5 +71,5 @@
       become: yes
 
     - name: Copy in the ssh known hosts
-      copy: src=ssh/known_hosts dest=/var/lib/nagios/.ssh/known_hosts owner=nagios group=nagios mode=0700
+      copy: src=ssh/known_hosts dest=/var/lib/nagios/.ssh/known_hosts owner=nagios group=nagios mode=0600
       become: yes

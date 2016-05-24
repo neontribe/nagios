@@ -1,14 +1,31 @@
 #!/bin/bash
 
+if [ -z "$2" ]; then
+    LIVE=1
+elif [ "$2" == "Live" ]; then
+    LIVE=1
+elif [ "$2" == "Test" ]; then
+    TEST=1
+fi
+
 wget --no-check-certificate -O - -q https://$1/robots.txt | grep -i "^Disallow: /$">/tmp/debug.log
 SUCCESS=$?
 
 # if [ "$COUNT" -gt 5 ]; then
-if [ "$SUCCESS" == 1 ]; then
-    echo "Good robots: ^Disallow: /\$ not found."
+if [ "$SUCCESS" == 1 ] && [ "$LIVE" == 1]; then
+    echo "Good robots: ^Disallow: /\$ not found on live site."
+    exit 0;
+elif [ "$LIVE" == 1 ]; then
+    echo "Bad robots: ^Disallow: /\$ found on live site.";
+    exit 2;
+elif [ "$SUCCESS" == 1 ] && [ "$TEST" == 1]; then
+    echo "Bad robots: No ^Disallow: /\$ found on test site.";
+    exit 2;
+elif [ "$TEST" == 1 ]; then
+    echo "Good robots: ^Disallow: /\$  found on test site."
     exit 0;
 fi
 
-echo "Bad robots: ^Disallow: /\$ found.";
-exit 2;
+echo "Unable to determine Live/Test status. '$1', '$2'"
+exit 1;
 

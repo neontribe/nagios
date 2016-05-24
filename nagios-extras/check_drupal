@@ -87,19 +87,52 @@ try:
         r = requests.get(url, headers=headers)
         data = r.json()
 
-    is_live_site = sys.argv[2]
+    try:
+        is_live_site = sys.argv[2]
+    except Exception as inst:
+        is_live_site = 'Live'
 
-    sagepay = checkSagepay(data["sagepay"], is_live_site)
-    readonly = checkReadOnly(data["readonly"])
-    cron = checkCron(data['cron'])
-    devel = checkDevel(data['devel'])
+    try:
+        sagepay = checkSagepay(data["sagepay"], is_live_site)
+    except Exception as inst:
+        print "1"
+        print inst
 
-    state = max(sagepay['status'], readonly['status'], cron['status'], devel['status']);
-    message = sagepay['print'] + ', ' + readonly['print'] + ', ' + cron['print'] + ', ' + devel['print']
+    try:
+        readonly = checkReadOnly(data["readonly"])
+    except Exception as inst:
+        print "2"
+        print inst
+
+    try:
+        cron = checkCron(data['cron'])
+    except Exception as inst:
+        print "3"
+        print inst
+
+    try:
+        devel = checkDevel(data['devel'])
+    except Exception as inst:
+        print "4"
+        print inst
+
+    try:
+        state = max(sagepay['status'], readonly['status'], cron['status'], devel['status']);
+    except Exception as inst:
+        print "5"
+        print inst
+
+    try:
+        message = sagepay['print'] + ', ' + readonly['print'] + ', ' + cron['print'] + ', ' + devel['print']
+    except Exception as inst:
+        print "6"
+        print inst
 
     print message
     sys.exit(state)
 
 except Exception as inst:
-    print "UNKNOWN - Error: ", inst, data
+    # print "UNKNOWN - Error: ", inst, data
+    print inst
     sys.exit(3)
+
